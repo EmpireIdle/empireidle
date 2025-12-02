@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Empire Admin Portal</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #fafafa;
+            color: #333;
+        }
+        #topBar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            background: #f2f2f2;
+            border-bottom: 1px solid #ddd;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #topBar a {
+            font-size: 14px;
+            text-decoration: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #333;
+        }
+        #container {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+        #nav {
+            width: 180px;
+        }
+        #nav button {
+            display: block;
+            width: 100%;
+            margin-bottom: 6px;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            text-align: left;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        #nav button.active {
+            background: #3467eb;
+            color: #fff;
+            border-color: #2853c8;
+        }
+        #content {
+            flex: 1;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 16px 18px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        h2 {
+            margin-top: 0;
+        }
+        .fieldRow {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+        .fieldRow label {
+            width: 180px;
+            font-size: 14px;
+        }
+        .fieldRow input {
+            padding: 5px 7px;
+            font-size: 14px;
+            width: 120px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 6px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 6px 8px;
+        }
+        table th {
+            background: #f7f7f7;
+            text-align: left;
+        }
+        #saveBtn {
+            padding: 8px 14px;
+            background: #3467eb;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        #saveBtn:hover {
+            background: #2853c8;
+        }
+        #statusMsg {
+            margin-left: 12px;
+            font-size: 13px;
+            color: #2b7a0b;
+        }
+        .hint {
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="topBar">
+    <div>Empire Admin Portal</div>
+    <div>
+        <a href="index.html">⬅ Back to Game</a>
+    </div>
+</div>
+
+<div id="container">
+    <div id="nav">
+        <button data-tab="rates" class="active">Harvest Rates</button>
+        <button data-tab="house">House Settings</button>
+        <!-- later you can add more: Units, Buildings, etc. -->
+    </div>
+
+    <div id="content">
+        <!-- Content panels inserted by JS -->
+    </div>
+</div>
+
+<script>
+const CONFIG_KEY = "empire_admin_config_v1";
+
+// Default config (matches current game behaviour)
+const DEFAULT_CONFIG = {
+    productionRates: {
+        forest: { wood: 0.15 },
+        berry:  { food: 0.12 },
+        stone:  { stone: 0.12 },
+        game:   { food: 0.20 },
+        river:  { food: 0.05 },
+        iron:   { iron: 0.08 },
+        grass:  { food: 0.02 }
+    },
+    buildTimes: {
+        house: 30  // seconds
+    },
+    house: {
+        hp: 500,
+        pop: 4,
+        cost: { wood: 50, stone: 40 }
+    }
+};
+
+// --- Load / save config ---
+function loadConfig() {
+    try {
+        const raw = localStorage.getItem(CONFIG_KEY);
+        if (!raw) return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+        const data = JSON.parse(raw);
+        // Merge defaults so new fields get sensible values
+        return deepMerge(JSON.parse(JSON.stringify(DEFAULT_CONFIG)), data);
+    } catch (e) {
+        console.warn("Config parse error, using defaults", e);
+        return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+    }
+}
+
+function saveConfig(cfg) {
+    localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+}
+
+// Simple deep merge for plain objects
+function deepMerge(target, src) {
+    for (const k in src) {
+        if (src[k] && typeof src[k] === "object" && !Array.isArray(src[k])) {
+            if (!target[k] || typeof target[k] !== "object") target[k] = {};
+            deepMerge(target[k], src[k]);
+        } else {
+            target[k] = src[k];
+        }
+    }
+    return target;
+}
+
+let config = loadConfig();
+
+// --- UI rendering ---
+const contentEl = document.getElementById("content");
+const navButtons = Array.from(document.querySelectorAll("#nav button"));
+
+function setActiveTab(tab) {
+    navButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tab);
+    });
+    if (tab === "rates") renderRatesTab();
+    if (tab === "house") renderHouseTab();
+}
+
+navButtons.forEach(btn => {
+    btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+});
+
+// Harvest Rates tab
+function renderRatesTab() {
+    const rates = config.productionRates;
+    contentEl.innerHTML = `
+        <h2>Harvest / Production Rates</h2>
+        <div class="hint">
+            Values are resources per second for one worker assigned to that tile type.
+            Edit the numbers and click <strong>Save Changes</strong>.
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tile Type</th>
+                    <th>Food /s</th>
+                    <th>Wood /s</th>
+                    <th>Stone /s</th>
+                    <th>Iron /s</th>
+                </tr>
+            </thead>
+            <tbody id="ratesBody"></tbody>
+        </table>
+        <button id="saveBtn">Save Changes</button>
+        <span id="statusMsg"></span>
+    `;
+
+    const tbody = document.getElementById("ratesBody");
+    tbody.innerHTML = "";
+
+    const tileOrder = ["forest","berry","stone","game","river","iron","grass"];
+    tileOrder.forEach(tile => {
+        const r = rates[tile] || {};
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${tile}</td>
+            <td><input data-tile="${tile}" data-res="food"  type="number" step="0.01" value="${r.food  ?? ""}"></td>
+            <td><input data-tile="${tile}" data-res="wood"  type="number" step="0.01" value="${r.wood  ?? ""}"></td>
+            <td><input data-tile="${tile}" data-res="stone" type="number" step="0.01" value="${r.stone ?? ""}"></td>
+            <td><input data-tile="${tile}" data-res="iron"  type="number" step="0.01" value="${r.iron  ?? ""}"></td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    document.getElementById("saveBtn").onclick = () => {
+        const inputs = tbody.querySelectorAll("input");
+        const newRates = {};
+        inputs.forEach(inp => {
+            const tile = inp.dataset.tile;
+            const res  = inp.dataset.res;
+            const val  = inp.value === "" ? null : Number(inp.value);
+            if (!newRates[tile]) newRates[tile] = {};
+            if (val != null && !Number.isNaN(val)) newRates[tile][res] = val;
+        });
+        config.productionRates = newRates;
+        saveConfig(config);
+        showSaved();
+    };
+}
+
+// House tab
+function renderHouseTab() {
+    const house   = config.house;
+    const build   = config.buildTimes || {};
+    const cost    = house.cost || {};
+    const hp      = house.hp ?? "";
+    const pop     = house.pop ?? "";
+    const buildT  = build.house ?? "";
+
+    contentEl.innerHTML = `
+        <h2>House Settings</h2>
+        <div class="hint">
+            These settings control how your basic House works in the game.
+        </div>
+        <div class="fieldRow">
+            <label for="houseHp">House HP</label>
+            <input id="houseHp" type="number" value="${hp}">
+        </div>
+        <div class="fieldRow">
+            <label for="housePop">Population Increase</label>
+            <input id="housePop" type="number" value="${pop}">
+        </div>
+        <div class="fieldRow">
+            <label for="houseBuildTime">Build Time (seconds)</label>
+            <input id="houseBuildTime" type="number" value="${buildT}">
+        </div>
+        <div class="fieldRow">
+            <label for="houseWoodCost">Wood Cost</label>
+            <input id="houseWoodCost" type="number" value="${cost.wood ?? ""}">
+        </div>
+        <div class="fieldRow">
+            <label for="houseStoneCost">Stone Cost</label>
+            <input id="houseStoneCost" type="number" value="${cost.stone ?? ""}">
+        </div>
+
+        <button id="saveBtn">Save Changes</button>
+        <span id="statusMsg"></span>
+    `;
+
+    document.getElementById("saveBtn").onclick = () => {
+        const hpVal     = Number(document.getElementById("houseHp").value || 0);
+        const popVal    = Number(document.getElementById("housePop").value || 0);
+        const btVal     = Number(document.getElementById("houseBuildTime").value || 0);
+        const woodVal   = Number(document.getElementById("houseWoodCost").value || 0);
+        const stoneVal  = Number(document.getElementById("houseStoneCost").value || 0);
+
+        config.house.hp = hpVal;
+        config.house.pop = popVal;
+        config.house.cost = { wood: woodVal, stone: stoneVal };
+        config.buildTimes.house = btVal;
+
+        saveConfig(config);
+        showSaved();
+    };
+}
+
+function showSaved() {
+    const el = document.getElementById("statusMsg");
+    if (!el) return;
+    el.textContent = "Saved. Open or refresh the game to see changes.";
+    setTimeout(() => { el.textContent = ""; }, 3000);
+}
+
+// init
+setActiveTab("rates");
+</script>
+
+</body>
+</html>
