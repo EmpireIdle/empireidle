@@ -1,11 +1,407 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Empire Idle – Text World</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<title>Empire Idle – Text World</title>
+<style>
+    body {
+        margin: 0;
+        background: #ffffff;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #333;
+    }
+
+    /* Top banner */
+    #topBar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 24px;
+        background: #f2f2f2;
+        border-bottom: 2px solid #ddd;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    #resources {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+    }
+    .resource {
+        display: flex;
+        gap: 6px;
+    }
+
+    #authSection {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+
+    #authInputs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #authSection input {
+        padding: 6px 8px;
+        border: 1px solid #bbb;
+        border-radius: 4px;
+        font-size: 14px;
+        width: 120px;
+    }
+
+    #loginBtn, #signupBtn, #logoutBtn {
+        padding: 7px 12px;
+        background: #3467eb;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        border: none;
+        font-size: 13px;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+    #signupBtn { background: #2ca34a; }
+    #logoutBtn { background: #888; }
+
+    #loginBtn:hover { background: #2853c8; }
+    #signupBtn:hover { background: #1f7d37; }
+    #logoutBtn:hover { background: #666; }
+
+    #authStatus {
+        font-size: 13px;
+        color: #444;
+    }
+
+    /* Main layout */
+    #mainLayout {
+        display: flex;
+        min-height: calc(100vh - 70px);
+        box-sizing: border-box;
+    }
+
+    .sidePane {
+        width: 260px;
+        border-right: 1px solid #e0e0e0;
+        background: #fafafa;
+        display: flex;
+        flex-direction: column;
+    }
+    #rightPane {
+        border-right: none;
+        border-left: 1px solid #e0e0e0;
+    }
+
+    .paneHeader {
+        padding: 10px 12px;
+        border-bottom: 1px solid #e0e0e0;
+        font-weight: bold;
+        font-size: 14px;
+        background: #f5f5f5;
+    }
+
+    .tabHeader {
+        display: flex;
+        border-bottom: 1px solid #e0e0e0;
+        background: #f8f8f8;
+    }
+
+    .tabBtn {
+        flex: 1;
+        padding: 8px 6px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        border-right: 1px solid #e0e0e0;
+    }
+    .tabBtn:last-child { border-right: none; }
+    .tabBtn.active {
+        background: #ffffff;
+        border-bottom: 2px solid #3467eb;
+        color: #3467eb;
+    }
+
+    .paneBody {
+        padding: 10px 12px;
+        font-size: 13px;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .itemList {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .itemList li {
+        padding: 6px 4px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .itemList li:hover {
+        background: #e7f0ff;
+    }
+
+    /* Center pane */
+    #centerPane {
+        flex: 1;
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #centerHeaderRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 8px;
+    }
+
+    #centerTitle {
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    #centerSubtitle {
+        font-size: 14px;
+        color: #777;
+        margin-bottom: 8px;
+    }
+
+    #centerBody {
+        font-size: 14px;
+        line-height: 1.5;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        padding: 12px 16px 16px 16px;
+        background: #fcfcfc;
+        min-height: 260px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #detailPanel {
+        flex: 0 0 auto;
+    }
+
+    .detailSectionTitle {
+        font-weight: bold;
+        margin-top: 8px;
+        margin-bottom: 4px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #555;
+    }
+
+    .detailRow { margin: 2px 0; }
+
+    .statGrid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px 16px;
+        margin-top: 4px;
+    }
+
+    .statLabel { font-weight: 600; }
+
+    .tagRow {
+        margin-top: 6px;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .tag {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 10px;
+        background: #e9edf8;
+        margin-right: 4px;
+        margin-top: 2px;
+    }
+
+    .primaryBtn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        background: #ffb129;
+        color: #3b2b00;
+        font-weight: 600;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .primaryBtn:hover { background: #e29b21; }
+
+    .primaryBtn[disabled] {
+        opacity: 0.5;
+        background: #dddddd;
+        color: #777;
+        cursor: default;
+    }
+
+    /* Hide obsolete Explore button */
+    #exploreBtn {
+        display: none;
+    }
+
+    /* Groups */
+    #groupsPane { display: none; }
+
+    #groupsHeaderRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+    #groupsHeaderRow button {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        cursor: pointer;
+        background: #ffffff;
+    }
+
+    #groupsHeaderRow button:hover { background: #f0f0f0; }
+
+    #availableUnits {
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    #groupsList {
+        list-style: none;
+        padding: 0;
+        margin: 6px 0 0 0;
+    }
+
+    #groupsList li {
+        padding: 5px 4px;
+        border-radius: 4px;
+        cursor: pointer;
+        border-bottom: 1px solid #ececec;
+    }
+
+    #groupsList li:hover { background: #e7f0ff; }
+
+    #createGroupForm {
+        margin-top: 8px;
+        padding: 8px;
+        border-radius: 4px;
+        background: #ffffff;
+        border: 1px solid #ddd;
+        font-size: 12px;
+    }
+
+    #createGroupForm label {
+        display: block;
+        margin-top: 4px;
+    }
+
+    #createGroupForm input[type="text"],
+    #createGroupForm input[type="number"],
+    #createGroupForm select {
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 2px;
+        padding: 4px 6px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+
+    #createGroupFormActions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+        margin-top: 8px;
+    }
+
+    #createGroupFormActions button {
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        cursor: pointer;
+        font-size: 12px;
+        background: #ffffff;
+    }
+
+    #createGroupFormActions button:hover { background: #f0f0f0; }
+
+    #createGroupFormActions .saveBtn {
+        background: #3467eb;
+        border-color: #3467eb;
+        color: #ffffff;
+    }
+
+    #createGroupFormActions .saveBtn:hover { background: #2853c8; }
+
+    /* Activity log / discovered text */
+    #activityLog {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+    .activityEntry { margin-bottom: 6px; }
+
+    /* Group assignment controls */
+    #groupAssignmentControls {
+        margin-top: 8px;
+        padding-top: 6px;
+        border-top: 1px solid #e0e0e0;
+        font-size: 13px;
+    }
+
+    #groupAssignmentControls select {
+        width: 100%;
+        margin-top: 4px;
+        padding: 4px 6px;
+        border-radius: 3px;
+        border: 1px solid #ccc;
+        font-size: 12px;
+    }
+
+    #groupAssignmentControls button {
+        margin-top: 6px;
+        margin-right: 6px;
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        cursor: pointer;
+        background: #ffffff;
+    }
+
+    #groupAssignmentControls button.assignBtn {
+        background: #3467eb;
+        border-color: #3467eb;
+        color: #fff;
+    }
+
+    #groupAssignmentControls button.assignBtn:hover {
+        background: #2853c8;
+    }
+
+    #groupAssignmentControls button.unassignBtn:hover {
+        background: #f0f0f0;
+    }
+</style>
 </head>
 <body>
+
 <div id="topBar">
     <div id="resources">
         <div class="resource">Food: <span id="food">0</span></div>
@@ -13,7 +409,7 @@
         <div class="resource">Gold: <span id="gold">0</span></div>
         <div class="resource">Stone: <span id="stone">0</span></div>
         <div class="resource">Iron: <span id="iron">0</span></div>
-        <div class="resource">Population: <span id="pop">1</span></div>
+        <div class="resource">Population: <span id="pop">1/0</span></div>
     </div>
 
     <div id="authSection">
@@ -23,107 +419,1717 @@
             <button id="loginBtn">Login</button>
             <button id="signupBtn">Sign Up</button>
         </div>
-
         <span id="authStatus" style="display:none;"></span>
         <button id="logoutBtn" style="display:none;">Logout</button>
     </div>
 </div>
 
 <div id="mainLayout">
-    <div id="leftPane">
-        <div id="empirePanel">
-            <div id="leftTitle">Empire Panel</div>
-            <div id="leftTabs">
-                <button class="leftTab active" data-tab="units">Units</button>
-                <button class="leftTab" data-tab="buildings">Buildings</button>
-                <button class="leftTab" data-tab="groups">Groups</button>
+    <!-- LEFT PANE -->
+    <div class="sidePane" id="leftPane">
+        <div class="paneHeader">Empire Panel</div>
+        <div class="tabHeader">
+            <button class="tabBtn leftTab active" data-tab="units">Units</button>
+            <button class="tabBtn leftTab" data-tab="buildings">Buildings</button>
+            <button class="tabBtn leftTab" data-tab="groups">Groups</button>
+        </div>
+        <div class="paneBody" id="leftPaneBody">
+
+            <!-- UNITS TAB CONTENT -->
+            <div id="unitsPane">
+                <div id="unitsSummary">
+                    <div id="unitCounts" style="font-weight:bold;"></div>
+                    <div style="margin-top:4px;font-size:11px;color:#666;">
+                        Click a unit type for stats, or an individual unit to give it orders.
+                    </div>
+                </div>
+
+                <div style="margin-top:8px;font-size:12px;font-weight:bold;">Unit Types</div>
+                <ul class="itemList" id="unitsList">
+                    <li data-type="unitTemplate" data-id="citizen">Citizen (template)</li>
+                    <li data-type="unitTemplate" data-id="scout">Scout (template)</li>
+                    <li data-type="unitTemplate" data-id="hunter">Hunter (template)</li>
+                </ul>
+
+                <div id="ownedUnitsHeader" style="margin-top:8px;font-size:12px;font-weight:bold;">Owned Units</div>
+                <ul class="itemList" id="ownedUnitsList"></ul>
             </div>
 
-            <div id="leftTabContent">
-                <!-- Units Tab -->
-                <div class="leftTabPage" data-tab="units">
-                    <div class="leftSubTitle">Unit Types</div>
-                    <ul class="unitTypeList">
-                        <li data-unit-type="citizen">
-                            <strong>Citizen (template)</strong><br>
-                            General worker that can explore, harvest, and build.
-                        </li>
-                        <li data-unit-type="scout">
-                            <strong>Scout (template)</strong><br>
-                            Fast explorer, weaker in combat.
-                        </li>
-                        <li data-unit-type="hunter">
-                            <strong>Hunter (template)</strong><br>
-                            Focused on food from game and defense.
-                        </li>
-                    </ul>
+            <!-- BUILDINGS TAB CONTENT -->
+            <ul class="itemList" id="buildingsList" style="display:none;">
+    <li data-type="building" data-id="house">House</li>
+    <li data-type="building" data-id="settlement">Settlement</li>
+    <li data-type="building" data-id="hut">Hut</li>
+    <li data-type="building" data-id="campfire">Campfire</li>
+    <li data-type="building" data-id="storage">Storage Pit</li>
+</ul>
 
-                    <div class="leftSubTitle">Owned Units</div>
-                    <ul id="ownedUnitsList"></ul>
+
+            <!-- GROUPS TAB CONTENT -->
+            <div id="groupsPane">
+                <div id="groupsHeaderRow">
+                    <div><strong>Groups</strong></div>
+                    <button id="createGroupBtn">New Group</button>
+                </div>
+                <div id="availableUnits"></div>
+
+                <div id="createGroupForm" style="display:none;">
+                    <label>
+                        Group Name
+                        <input type="text" id="groupNameInput" placeholder="e.g. Scout Party Alpha">
+                    </label>
+
+                    <label>
+                        Order
+                        <select id="groupOrderInput">
+                            <option value="explore">Explore</option>
+                            <option value="patrol">Patrol</option>
+                            <option value="defend">Defend</option>
+                            <option value="attack">Attack</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Citizens to assign
+                        <input type="number" id="groupCitizenInput" min="0" value="0">
+                    </label>
+                    <label>
+                        Scouts to assign
+                        <input type="number" id="groupScoutInput" min="0" value="0">
+                    </label>
+                    <label>
+                        Hunters to assign
+                        <input type="number" id="groupHunterInput" min="0" value="0">
+                    </label>
+
+                    <div id="createGroupFormActions">
+                        <button type="button" id="cancelGroupBtn">Cancel</button>
+                        <button type="button" class="saveBtn" id="saveGroupBtn">Save Group</button>
+                    </div>
                 </div>
 
-                <!-- Buildings Tab -->
-                <div class="leftTabPage hidden" data-tab="buildings">
-                    <div class="leftSubTitle">Buildings</div>
-                    <ul id="buildingsList"></ul>
-                </div>
-
-                <!-- Groups Tab -->
-                <div class="leftTabPage hidden" data-tab="groups">
-                    <div class="leftSubTitle">Groups</div>
-                    <button id="createGroupBtn" class="primaryBtn small">+ Create Group</button>
-                    <ul id="groupsList"></ul>
-                </div>
+                <ul id="groupsList"></ul>
             </div>
         </div>
     </div>
 
+    <!-- CENTER PANE -->
     <div id="centerPane">
         <div id="centerHeaderRow">
             <div>
                 <div id="centerTitle">Empire Overview</div>
-                <div id="centerSubtitle">Set unit and group orders...</div>
+                <div id="centerSubtitle">
+                    Set unit and group orders. Units on Explore will automatically discover new territory over time.
+                </div>
             </div>
+            <!-- explore button now hidden via CSS -->
             <button id="exploreBtn" class="primaryBtn">Explore</button>
         </div>
-
         <div id="centerBody">
             <div id="detailPanel">
-                <!-- This gets filled dynamically with unit/group details -->
+                <div class="detailRow">This area shows:</div>
+                <div class="detailRow">• Stats for selected units or buildings</div>
+                <div class="detailRow">• Group compositions and orders</div>
+                <div class="detailRow">• A log of discovered territories and their resources</div>
             </div>
         </div>
     </div>
 
-    <div id="rightPane">
-        <div id="rightTabs">
-            <button class="rightTab active" data-right-tab="queued">Queued</button>
-            <button class="rightTab" data-right-tab="activity">Activity</button>
-            <button class="rightTab" data-right-tab="discovered">Discovered</button>
+    <!-- RIGHT PANE -->
+    <div class="sidePane" id="rightPane">
+        <div class="paneHeader">Empire Status</div>
+        <div class="tabHeader">
+            <button class="tabBtn rightTab active" data-tab="queued">Queued</button>
+            <button class="tabBtn rightTab" data-tab="activity">Activity</button>
+            <button class="tabBtn rightTab" data-tab="discovered">Discovered</button>
         </div>
-
-        <div id="rightTabContent">
-            <div class="rightTabPage" data-right-tab="queued">
-                <div class="rightTitle">Empire Status</div>
-                <ul id="queuedList"></ul>
+        <div class="paneBody" id="rightPaneBody">
+            <div data-right-tab="queued" id="queuedPanel">
+                Nothing in the queue yet.
             </div>
-
-            <div class="rightTabPage hidden" data-right-tab="activity">
-                <div class="rightTitle">Activity Log</div>
-                <div id="activityLog"></div>
+            <div data-right-tab="activity" style="display:none;">
+                <div id="activityLog">
+                    No current activity.
+                </div>
             </div>
-
-            <div class="rightTabPage hidden" data-right-tab="discovered">
-                <div class="rightTitle">Resources available in the world (not yet harvested):</div>
-                <ul id="discoveredList"></ul>
-                <p class="rightHint">
-                    Assign units to harvest to convert these into inventory.
-                </p>
+            <div data-right-tab="discovered" style="display:none;">
+                <div id="discoveredList">
+                    The world is unknown. Assign explorers to reveal new regions.
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<script src="game.js"></script>
+<script>
+    // ---------- core game state ----------
+    let game = {
+    food: 0,
+    wood: 0,
+    gold: 0,
+    stone: 0,
+    iron: 0,
+    population: 5,
+    populationLimit: 0,
+    units: { citizen: 5, scout: 0, hunter: 0 },
+    buildings: { house: 0, settlement: 0 },
+    // how many settlements are permanently focused on each resource
+    settlementAssignments: {
+        food: 0,
+        wood: 0,
+        stone: 0,
+        iron: 0
+    }
+};
+
+
+    // individual units
+    // order: "idle" | "explore" | "harvest" | "patrol" | "defend" | "attack" | "build"
+    let unitInstances = []; // {id, type, order, exploreProgress, harvestResource, harvestRemainder, taskQueue:[], currentBuild}
+    let nextUnitId = 1;
+
+    let groups = []; // {id,name,order,orderLabel,members,exploreProgress?}
+    let nextGroupId = 1;
+
+    // production config: per worker per second, by tile type
+    const productionRates = {
+        forest: { wood: 0.15 },
+        berry:  { food: 0.12 },
+        stone:  { stone: 0.12 },
+        game:   { food: 0.20 },
+        river:  { food: 0.05 },
+        iron:   { iron: 0.08 },
+        grass:  { food: 0.02 }
+    };
+
+    // per-unit harvest rates per second
+    const UNIT_HARVEST_RATES = {
+        food: 0.20,
+        wood: 0.15,
+        stone: 0.12,
+        iron: 0.08
+    };
+
+  // building construction times (seconds)
+const BUILD_TIMES = {
+    house: 30,
+    settlement: 45
+};
+
+const HOUSE_COST = { wood: 50, stone: 40 };
+const HOUSE_HP = 500;
+const HOUSE_POP = 4;
+
+const SETTLEMENT_COST = { wood: 100 };
+const SETTLEMENT_SLOTS_PER = 6;        // 6 citizens per settlement
+const SETTLEMENT_BOOST_FACTOR = 2.0;   // 200% harvest rate (2x)
+
+
+    // exploration timing (seconds per new tile)
+    const UNIT_EXPLORE_TIME  = 20; // one lone citizen takes 20s per tile
+    const GROUP_EXPLORE_TIME = 10; // groups explore faster
+
+    // discovered resources exist in the world until harvested
+    let worldMap = null;
+    let discoveredLog = [];
+    let discoveredTotals = { food: 0, wood: 0, stone: 0, iron: 0 };
+    let currentUser = null;
+    let selectedEntity = null;
+    let explorationCount = 0;
+
+    const AUTH_USERS_KEY   = "ee_idle_users";
+    const AUTH_CURRENT_KEY = "ee_idle_current";
+    const SAVE_PREFIX      = "ee_idle_save_";
+
+    // keep raw events if we ever want a history
+    let activityEvents = [];
+
+    // ---------- helpers ----------
+    function capitalize(str) {
+        return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+    }
+
+    function titleCaseResource(key) {
+        return key ? key.charAt(0).toUpperCase() + key.slice(1) : "";
+    }
+
+    function buildingName(type) {
+        if (type === "house") return "House";
+        return capitalize(type);
+    }
+
+    function spawnUnit(type) {
+        const u = {
+            id: nextUnitId++,
+            type,
+            order: "idle",
+            exploreProgress: 0,
+            harvestResource: null,
+            harvestRemainder: 0,
+            taskQueue: [],
+            currentBuild: null
+        };
+        unitInstances.push(u);
+        return u;
+    }
+
+    // ---------- DOM ----------
+    const unitsList = document.getElementById("unitsList");
+    const ownedUnitsListEl = document.getElementById("ownedUnitsList");
+    const ownedUnitsHeaderEl = document.getElementById("ownedUnitsHeader");
+    const unitCountsDiv = document.getElementById("unitCounts");
+
+    const buildingsList = document.getElementById("buildingsList");
+    const groupsPane = document.getElementById("groupsPane");
+    const availableUnitsDiv = document.getElementById("availableUnits");
+    const groupsListEl = document.getElementById("groupsList");
+    const leftTabs = document.querySelectorAll(".leftTab");
+
+    const rightTabs = document.querySelectorAll(".rightTab");
+    const rightBodies = document.querySelectorAll("#rightPaneBody [data-right-tab]");
+    const queuedPanel = document.getElementById("queuedPanel");
+
+    const centerTitle = document.getElementById("centerTitle");
+    const centerSubtitle = document.getElementById("centerSubtitle");
+    const detailPanel = document.getElementById("detailPanel");
+    const exploreBtn = document.getElementById("exploreBtn"); // hidden
+    const activityLog = document.getElementById("activityLog");
+    const discoveredListEl = document.getElementById("discoveredList");
+
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const signupBtn = document.getElementById("signupBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const authInputs = document.getElementById("authInputs");
+    const authStatus = document.getElementById("authStatus");
+
+    const createGroupBtn = document.getElementById("createGroupBtn");
+    const createGroupForm = document.getElementById("createGroupForm");
+    const groupNameInput = document.getElementById("groupNameInput");
+    const groupOrderInput = document.getElementById("groupOrderInput");
+    const groupCitizenInput = document.getElementById("groupCitizenInput");
+    const groupScoutInput = document.getElementById("groupScoutInput");
+    const groupHunterInput = document.getElementById("groupHunterInput");
+    const cancelGroupBtn = document.getElementById("cancelGroupBtn");
+    const saveGroupBtn = document.getElementById("saveGroupBtn");
+
+    // ---------- auth helpers ----------
+    function loadUsers() {
+        try {
+            const raw = localStorage.getItem(AUTH_USERS_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch {
+            return {};
+        }
+    }
+
+    function saveUsers(users) {
+        localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
+    }
+
+    function setCurrentUser(username) {
+        currentUser = username;
+        if (username) localStorage.setItem(AUTH_CURRENT_KEY, username);
+        else localStorage.removeItem(AUTH_CURRENT_KEY);
+        updateAuthUI();
+    }
+
+    function loadCurrentUserFromStorage() {
+        return localStorage.getItem(AUTH_CURRENT_KEY) || null;
+    }
+
+    function saveGameForCurrentUser() {
+        if (!currentUser) return;
+        const saveKey = SAVE_PREFIX + currentUser;
+        const payload = {
+            game,
+            groups,
+            nextGroupId,
+            worldMap,
+            discoveredLog,
+            discoveredTotals,
+            unitInstances,
+            nextUnitId
+        };
+        localStorage.setItem(saveKey, JSON.stringify(payload));
+    }
+
+function loadGameForUser(username) {
+    const saveKey = SAVE_PREFIX + username;
+    const raw = localStorage.getItem(saveKey);
+    if (!raw) return false;
+    try {
+        const data = JSON.parse(raw);
+        if (data.game) game = data.game;
+
+        // Ensure buildings object exists
+        if (!game.buildings) game.buildings = { house: 0, settlement: 0 };
+        if (typeof game.buildings.house !== "number") game.buildings.house = 0;
+        if (typeof game.buildings.settlement !== "number") game.buildings.settlement = 0;
+
+        // Ensure settlementAssignments exists
+        if (!game.settlementAssignments) {
+            game.settlementAssignments = { food: 0, wood: 0, stone: 0, iron: 0 };
+        } else {
+            for (const key of ["food", "wood", "stone", "iron"]) {
+                if (typeof game.settlementAssignments[key] !== "number") {
+                    game.settlementAssignments[key] = 0;
+                }
+            }
+        }
+
+        // Ensure populationLimit exists and matches houses for old saves
+        const houseCount = game.buildings && typeof game.buildings.house === "number"
+            ? game.buildings.house
+            : 0;
+        const derivedPopLimit = houseCount * HOUSE_POP;
+        if (typeof game.populationLimit !== "number" || game.populationLimit < derivedPopLimit) {
+            game.populationLimit = derivedPopLimit;
+        }
+
+        if (Array.isArray(data.groups)) groups = data.groups;
+        if (typeof data.nextGroupId === "number") nextGroupId = data.nextGroupId;
+        if (data.worldMap) worldMap = data.worldMap;
+        if (Array.isArray(data.discoveredLog)) discoveredLog = data.discoveredLog;
+        if (data.discoveredTotals) {
+            discoveredTotals = data.discoveredTotals;
+        } else {
+            discoveredTotals = { food: 0, wood: 0, stone: 0, iron: 0 };
+        }
+
+        unitInstances = data.unitInstances || [];
+        nextUnitId = data.nextUnitId || 1;
+
+        unitInstances.forEach(u => {
+            if (typeof u.exploreProgress !== "number") u.exploreProgress = 0;
+            if (typeof u.harvestRemainder !== "number") u.harvestRemainder = 0;
+            if (!u.taskQueue) u.taskQueue = [];
+            if (!u.order) u.order = "idle";
+            if (!u.currentBuild) u.currentBuild = null;
+        });
+
+        groups.forEach(g => {
+            if (typeof g.exploreProgress !== "number") g.exploreProgress = 0;
+        });
+
+        if (!unitInstances.length) {
+            unitInstances = [];
+            nextUnitId = 1;
+            for (let i = 0; i < (game.units.citizen || 0); i++) spawnUnit("citizen");
+            for (let i = 0; i < (game.units.scout || 0); i++) spawnUnit("scout");
+            for (let i = 0; i < (game.units.hunter || 0); i++) spawnUnit("hunter");
+        }
+
+        if (!worldMap) initWorldMap(true);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+
+
+ function startNewGameState() {
+    game = {
+        food: 0,
+        wood: 0,
+        gold: 0,
+        stone: 0,
+        iron: 0,
+        population: 5,
+        populationLimit: 0,
+        units: { citizen: 5, scout: 0, hunter: 0 },
+        buildings: { house: 0, settlement: 0 },
+        settlementAssignments: {
+            food: 0,
+            wood: 0,
+            stone: 0,
+            iron: 0
+        }
+    };
+
+    groups = [];
+    nextGroupId = 1;
+    selectedEntity = null;
+    discoveredTotals = { food: 0, wood: 0, stone: 0, iron: 0 };
+    unitInstances = [];
+    nextUnitId = 1;
+    explorationCount = 0;
+    activityEvents = [];
+
+    // spawn 5 citizens
+    for (let i = 0; i < 5; i++) {
+        spawnUnit("citizen");
+    }
+
+    centerTitle.textContent = "Empire Overview";
+    centerSubtitle.textContent =
+        "Set unit and group orders. Units on Explore will automatically discover new territory over time.";
+    detailPanel.innerHTML = `
+        <div class="detailRow">This area shows:</div>
+        <div class="detailRow">• Stats for selected units or buildings</div>
+        <div class="detailRow">• Group compositions and orders</div>
+        <div class="detailRow">• A log of discovered territories and their resources</div>
+    `;
+
+    initWorldMap(true);
+    discoveredLog = [];
+    logDiscovery("Starting camp established at the central grassland (0, 0).");
+}
+
+
+
+    function updateAuthUI() {
+        if (currentUser) {
+            authInputs.style.display = "none";
+            authStatus.style.display = "inline";
+            authStatus.textContent = `Logged in as ${currentUser}`;
+            logoutBtn.style.display = "inline-block";
+        } else {
+            authInputs.style.display = "flex";
+            authStatus.style.display = "none";
+            authStatus.textContent = "";
+            logoutBtn.style.display = "none";
+        }
+    }
+
+    // ---------- map logic ----------
+    function initWorldMap(forceNew = false) {
+        if (worldMap && !forceNew) return;
+
+        const radius = 4;
+        const tiles = {};
+        const neighbourDirs = [
+            [1, 0], [-1, 0],
+            [0, 1], [0, -1],
+            [1, -1], [-1, 1]
+        ];
+
+        for (let q = -radius; q <= radius; q++) {
+            for (let r = -radius; r <= radius; r++) {
+                const s = -q - r;
+                if (Math.abs(s) > radius) continue;
+                const key = `${q},${r}`;
+                tiles[key] = {
+                    q, r,
+                    explored: false,
+                    type: null,
+                    desc: "",
+                    isStart: false,
+                    assignedGroupId: null,
+                    _rem_food: 0,
+                    _rem_wood: 0,
+                    _rem_stone: 0,
+                    _rem_iron: 0
+                };
+            }
+        }
+
+        const startKey = "0,0";
+        if (tiles[startKey]) {
+            tiles[startKey].explored = true;
+            tiles[startKey].type = "grass";
+            tiles[startKey].desc = "Starting Grassland";
+            tiles[startKey].isStart = true;
+        }
+
+        worldMap = { radius, tiles, neighbourDirs, startKey };
+    }
+
+    function tileKey(q, r) {
+        return `${q},${r}`;
+    }
+
+    function getTile(q, r) {
+        if (!worldMap || !worldMap.tiles) return null;
+        return worldMap.tiles[tileKey(q, r)] || null;
+    }
+
+    function getTileByKey(key) {
+        if (!worldMap || !worldMap.tiles) return null;
+        return worldMap.tiles[key] || null;
+    }
+
+    function getExploredTiles() {
+        return Object.values(worldMap.tiles).filter(t => t.explored);
+    }
+
+    function getUnexploredNeighbours() {
+        const candidates = [];
+        const seen = new Set();
+        const explored = getExploredTiles();
+
+        explored.forEach(t => {
+            worldMap.neighbourDirs.forEach(([dq, dr]) => {
+                const q = t.q + dq;
+                const r = t.r + dr;
+                const nt = getTile(q, r);
+                if (!nt || nt.explored) return;
+                const key = tileKey(q, r);
+                if (seen.has(key)) return;
+                seen.add(key);
+                candidates.push(nt);
+            });
+        });
+
+        return candidates;
+    }
+
+    function randomTileType() {
+        const choices = [
+            { type: "grass",  weight: 30, desc: "Grassland. No major resources discovered yet." },
+            { type: "forest", weight: 18, desc: "Forest. Provides wood when workers are assigned." },
+            { type: "berry",  weight: 12, desc: "Berry Bushes. Provides food when gatherers are assigned." },
+            { type: "stone",  weight: 10, desc: "Stone Outcrop. Provides stone for construction." },
+            { type: "game",   weight: 9,  desc: "Hunting Grounds. Provides meat when hunters are assigned." },
+            { type: "river",  weight: 7,  desc: "River Bend. Can be used for fishing and fresh water later." },
+            { type: "iron",   weight: 5,  desc: "Iron Deposit. Source of iron for future ages." },
+            { type: "ruins",  weight: 4,  desc: "Ancient Ruins. May hide secrets, bonuses, or events." },
+            { type: "enemy",  weight: 3,  desc: "Enemy Encampment. Dangerous territory." }
+        ];
+        const total = choices.reduce((s,c) => s + c.weight, 0);
+        let r = Math.random() * total;
+        for (const c of choices) {
+            if (r < c.weight) return c;
+            r -= c.weight;
+        }
+        return choices[0];
+    }
+
+    function discoverNewTile() {
+        // Directly discover new resources when exploration happens
+        const randomResourceType = getRandomResourceType();
+        applyResourceDiscovery(randomResourceType);
+        logDiscovery(`A new resource discovered: ${randomResourceType.desc}`);
+        return randomResourceType;
+    }
+
+    // Generate a random resource type for exploration
+    function getRandomResourceType() {
+        const resourceTypes = [
+            { type: 'food', desc: 'Food (Berry Bushes)', amount: 10 },
+            { type: 'wood', desc: 'Wood (Forest)', amount: 8 },
+            { type: 'stone', desc: 'Stone (Outcrop)', amount: 5 },
+            { type: 'iron', desc: 'Iron (Deposit)', amount: 3 }
+        ];
+
+        const randomIndex = Math.floor(Math.random() * resourceTypes.length);
+        return resourceTypes[randomIndex];
+    }
+
+    function applyResourceDiscovery(resource) {
+        // Update the discovered totals directly
+        switch (resource.type) {
+            case 'food':
+                discoveredTotals.food += resource.amount;
+                break;
+            case 'wood':
+                discoveredTotals.wood += resource.amount;
+                break;
+            case 'stone':
+                discoveredTotals.stone += resource.amount;
+                break;
+            case 'iron':
+                discoveredTotals.iron += resource.amount;
+                break;
+        }
+        renderDiscoveredList(); // Ensure UI is updated
+    }
+
+    function renderDiscoveredList() {
+        if (!discoveredListEl) return;
+
+        const { food, wood, stone, iron } = discoveredTotals;
+        const totalSites = food + wood + stone + iron;
+
+        if (totalSites === 0) {
+            discoveredListEl.textContent = "No resources discovered yet. Set a unit or group to Explore to reveal deposits.";
+            return;
+        }
+
+        discoveredListEl.innerHTML = `
+        <div><strong>Resources available in the world (not yet harvested):</strong></div>
+        <ul style="margin:4px 0 0 18px;padding:0;">
+            <li>Food: ${Math.floor(food)}</li>
+            <li>Wood: ${Math.floor(wood)}</li>
+            <li>Stone: ${Math.floor(stone)}</li>
+            <li>Iron: ${Math.floor(iron)}</li>
+        </ul>
+        <div style="margin-top:6px;font-size:11px;color:#666;">
+            Assign units to harvest to convert these into inventory.
+        </div>
+    `;
+    }
+
+
+    // ---------- groups / units ----------
+    function getAssignedUnits() {
+        const t = { citizen: 0, scout: 0, hunter: 0 };
+        groups.forEach(g => {
+            t.citizen += g.members.citizen;
+            t.scout   += g.members.scout;
+            t.hunter  += g.members.hunter;
+        });
+        return t;
+    }
+
+    function getAvailableUnits() {
+        const a = getAssignedUnits();
+        return {
+            citizen: Math.max(0, game.units.citizen - a.citizen),
+            scout:   Math.max(0, game.units.scout   - a.scout),
+            hunter:  Math.max(0, game.units.hunter  - a.hunter)
+        };
+    }
+
+    function updateAvailableUnitsDisplay() {
+        const a = getAvailableUnits();
+        availableUnitsDiv.textContent =
+            `Available units – Citizens: ${a.citizen}, Scouts: ${a.scout}, Hunters: ${a.hunter}`;
+    }
+
+    function updateGroupInputsMax() {
+        const a = getAvailableUnits();
+        groupCitizenInput.max = a.citizen;
+        groupScoutInput.max   = a.scout;
+        groupHunterInput.max  = a.hunter;
+    }
+
+    function updateUnitCounts() {
+        unitCountsDiv.textContent =
+            `Citizens: ${game.units.citizen}   •   Scouts: ${game.units.scout}   •   Hunters: ${game.units.hunter}`;
+    }
+
+    function renderOwnedUnitsList() {
+        const hasUnits = unitInstances.length > 0;
+
+        if (!hasUnits) {
+            ownedUnitsHeaderEl.style.display = "none";
+            ownedUnitsListEl.style.display = "none";
+            ownedUnitsListEl.innerHTML = "";
+            return;
+        }
+
+        ownedUnitsHeaderEl.style.display = "";
+        ownedUnitsListEl.style.display = "";
+
+        ownedUnitsListEl.innerHTML = "";
+        unitInstances.forEach(u => {
+            const li = document.createElement("li");
+            li.dataset.unitId = u.id;
+            const typeName = capitalize(u.type);
+            const readableOrder = describeUnitOrderShort(u);
+            li.innerHTML = `<strong>${typeName} #${u.id}</strong><br>
+                <span style="font-size:11px;color:#555;">${readableOrder}</span>`;
+            ownedUnitsListEl.appendChild(li);
+        });
+    }
+
+    function renderGroupsList() {
+        groupsListEl.innerHTML = "";
+        if (!groups.length) {
+            const li = document.createElement("li");
+            li.textContent = "No groups created yet.";
+            li.style.cursor = "default";
+            li.style.color = "#777";
+            groupsListEl.appendChild(li);
+            return;
+        }
+        groups.forEach(g => {
+            const li = document.createElement("li");
+            li.dataset.groupId = g.id;
+            li.innerHTML = `<strong>${g.name}</strong><br>
+                <span style="font-size:11px;color:#555;">
+                    ${g.orderLabel} · C:${g.members.citizen} S:${g.members.scout} H:${g.members.hunter}
+                </span>`;
+            groupsListEl.appendChild(li);
+        });
+    }
+
+    function addActivityEntry(text) {
+        const time = new Date().toLocaleTimeString();
+        activityEvents.unshift({ time, text });
+        if (activityEvents.length > 50) activityEvents.length = 50;
+        refreshActivitySummary();
+    }
+
+    const unitData = {
+        citizen: {
+            name: "Citizen",
+            type: "Unit",
+            epoch: "All Epochs",
+            role: "Basic worker used to gather resources and construct buildings. Very weak in combat.",
+            trainedAt: ["Town Center", "Capitol"],
+            attributes: { hp: 65, attack: 5, speed: 10, range: 2 },
+            production: { cost: "50 Food", pop: 1, buildTime: "28 seconds" },
+            tags: ["Worker", "Economic", "Core"],
+            notes: [
+                "Only standard unit (besides later engineers) that can both gather resources and construct buildings.",
+                "Can populate settlements into larger towns and cities.",
+                "Stats stay mostly consistent across epochs.",
+                "Often produced in large numbers early to accelerate your economy."
+            ]
+        }
+    };
+
+    const buildingData = {
+    house: {
+        name: "House",
+        hp: HOUSE_HP,
+        costText: "50 Wood, 40 Stone",
+        pop: HOUSE_POP,
+        desc: "Basic dwelling that increases your population limit by 4 when completed."
+    },
+    settlement: {
+        name: "Settlement",
+        hp: 750,
+        costText: "100 Wood",
+        pop: 0,
+        desc: "Economic outpost. Permanently focuses 6 Citizens on one resource at 200% harvest rate. Multiple settlements stack for that resource."
+    }
+};
+
+
+    function renderUnitTemplate(u) {
+        const a = u.attributes || {};
+        const p = u.production || {};
+        detailPanel.innerHTML = `
+            <div class="detailSectionTitle">Overview</div>
+            <div class="detailRow"><span class="statLabel">Name:</span> ${u.name}</div>
+            <div class="detailRow"><span class="statLabel">Type:</span> ${u.type}</div>
+            <div class="detailRow"><span class="statLabel">Epochs:</span> ${u.epoch}</div>
+            <div class="detailRow"><span class="statLabel">Role:</span> ${u.role}</div>
+
+            <div class="tagRow">
+                ${(u.tags || []).map(t => `<span class="tag">${t}</span>`).join("")}
+            </div>
+
+            <div class="detailSectionTitle">Trained At</div>
+            <div class="detailRow">${(u.trainedAt || []).join(", ") || "—"}</div>
+
+            <div class="detailSectionTitle">Attributes</div>
+            <div class="statGrid">
+                <div><span class="statLabel">HP:</span> ${a.hp ?? "—"}</div>
+                <div><span class="statLabel">Attack:</span> ${a.attack ?? "—"}</div>
+                <div><span class="statLabel">Speed:</span> ${a.speed ?? "—"}</div>
+                <div><span class="statLabel">Range:</span> ${a.range ?? "—"}</div>
+            </div>
+
+            <div class="detailSectionTitle">Production</div>
+            <div class="statGrid">
+                <div><span class="statLabel">Cost:</span> ${p.cost ?? "—"}</div>
+                <div><span class="statLabel">Population:</span> ${p.pop ?? "—"}</div>
+                <div><span class="statLabel">Build Time:</span> ${p.buildTime ?? "—"}</div>
+            </div>
+
+            <div class="detailSectionTitle">Notes</div>
+            <div><ul>${(u.notes || []).map(n => `<li>${n}</li>`).join("")}</ul></div>
+        `;
+    }
+
+    // Explore button is obsolete; keep stub so calls don't break
+    function updateExploreButtonState() { }
+
+    function showUnitTemplateDetails(id, name) {
+        const d = unitData[id];
+        selectedEntity = { kind: "unitTemplate", id, name };
+        updateExploreButtonState();
+        centerTitle.textContent = name;
+        centerSubtitle.textContent = d
+            ? "Unit summary, attributes, and production details."
+            : "Unit details.";
+        if (d) renderUnitTemplate(d);
+    }
+
+    function describeUnitOrderShort(u) {
+        if (u.order === "explore") return "Order: Explore";
+        if (u.order === "harvest") {
+            const r = u.harvestResource ? titleCaseResource(u.harvestResource) : "Resources";
+            return `Order: Harvest ${r}`;
+        }
+        if (u.order === "build") {
+            const bName = u.currentBuild ? buildingName(u.currentBuild.type) : "Building";
+            return `Order: Build ${bName}`;
+        }
+        if (!u.order || u.order === "idle") return "Order: Idle";
+        return `Order: ${capitalize(u.order)}`;
+    }
+
+    function describeUnitOrderSentence(u) {
+        const typeName = capitalize(u.type);
+        let action;
+        if (u.order === "explore") {
+            action = "is exploring.";
+        } else if (u.order === "harvest") {
+            const rName = u.harvestResource ? titleCaseResource(u.harvestResource) : "resources";
+            action = `is harvesting ${rName.toLowerCase()}.`;
+        } else if (u.order === "build") {
+            if (u.currentBuild) {
+                const secs = Math.max(0, Math.ceil(u.currentBuild.remaining));
+                action = `is building a ${buildingName(u.currentBuild.type)} (${secs}s remaining).`;
+            } else {
+                action = "is constructing a building.";
+            }
+        } else if (!u.order || u.order === "idle") {
+            action = "is idle.";
+        } else {
+            action = `is ${u.order.toLowerCase()}.`;
+        }
+        return `${typeName} #${u.id} ${action}`;
+    }
+
+    function describeGroupOrderSentence(g) {
+        if (!g.order || g.order === "idle") return `Group "${g.name}" is idle.`;
+        if (g.order === "explore") return `Group "${g.name}" is exploring nearby lands.`;
+        return `Group "${g.name}" is set to ${g.order.toLowerCase()}.`;
+    }
+
+    function refreshActivitySummary() {
+        if (!activityLog) return;
+
+        const lines = [];
+
+        unitInstances.forEach(u => {
+            lines.push(describeUnitOrderSentence(u));
+        });
+        groups.forEach(g => {
+            lines.push(describeGroupOrderSentence(g));
+        });
+
+        if (!lines.length) {
+            activityLog.textContent = "No current activity.";
+        } else {
+            activityLog.innerHTML = lines.map(l => `<div>${l}</div>`).join("");
+        }
+    }
+
+ function showIndividualUnitDetails(u) {
+    const displayName = `${capitalize(u.type)} #${u.id}`;
+    selectedEntity = { kind: "individual", id: u.id, unitType: u.type, name: displayName };
+    updateExploreButtonState();
+    centerTitle.textContent = displayName;
+    centerSubtitle.textContent = "Individual unit tasks and orders.";
+
+    const statusLine = describeUnitOrderSentence(u);
+    const queueText = u.taskQueue && u.taskQueue.length
+        ? u.taskQueue.join(", ")
+        : "None";
+
+    // build Harvest dropdown options based on discoveredTotals
+    const harvestOptions = [];
+    for (const key of ["food", "wood", "stone", "iron"]) {
+        if (discoveredTotals[key] > 0) {
+            harvestOptions.push(
+                `<option value="${key}" ${u.harvestResource === key ? "selected" : ""}>
+                    ${titleCaseResource(key)} (${Math.floor(discoveredTotals[key])} available)
+                 </option>`
+            );
+        }
+    }
+
+    const hasHarvestTargets = harvestOptions.length > 0;
+
+    detailPanel.innerHTML = `
+        <div class="detailSectionTitle">Status</div>
+        <div class="detailRow">${statusLine}</div>
+        <div class="detailRow"><span class="statLabel">Queued Tasks:</span> ${queueText}</div>
+
+        <div class="detailSectionTitle">Actions</div>
+        <div class="detailRow">
+            <button id="unitExploreBtn">Explore</button>
+        </div>
+
+        <div class="detailRow" style="margin-top:6px;">
+            <strong>Harvest / Mine</strong><br>
+            <select id="unitHarvestSelect" style="margin-top:4px;width:100%;">
+                ${
+                    hasHarvestTargets
+                        ? `<option value="">Select resource…</option>${harvestOptions.join("")}`
+                        : `<option value="">No discovered resources to harvest yet.</option>`
+                }
+            </select>
+            <button id="unitHarvestBtn" style="margin-top:4px;">Start Harvesting</button>
+        </div>
+
+        <div class="detailRow" style="margin-top:6px;">
+            <strong>Build</strong><br>
+            <button id="buildHouseBtn" style="margin-top:4px;">Build House (50 Wood, 40 Stone)</button>
+        </div>
+
+        <div class="detailRow" style="margin-top:6px;">
+            <strong>Build Settlement</strong><br>
+            <select id="settlementResourceSelect" style="margin-top:4px;width:100%;">
+                <option value="">Select focus resource…</option>
+                <option value="food">Food</option>
+                <option value="wood">Wood</option>
+                <option value="stone">Stone</option>
+                <option value="iron">Iron</option>
+            </select>
+            <button id="buildSettlementBtn" style="margin-top:4px;">Build Settlement (100 Wood)</button>
+        </div>
+
+        <div style="margin-top:8px;font-size:11px;color:#666;">
+            Explore discovers new resource deposits. Harvest converts discovered resources into inventory over time.
+            Houses increase your population limit by 4 when completed.
+        </div>
+    `;
+
+    const exploreButton = document.getElementById("unitExploreBtn");
+    const harvestSelect = document.getElementById("unitHarvestSelect");
+    const harvestButton = document.getElementById("unitHarvestBtn");
+    const buildHouseBtn = document.getElementById("buildHouseBtn");
+    const settlementResourceSelect = document.getElementById("settlementResourceSelect");
+    const buildSettlementBtn = document.getElementById("buildSettlementBtn");
+
+    // Only citizens can build houses or settlements
+    if (u.type !== "citizen") {
+        buildHouseBtn.disabled = true;
+        buildHouseBtn.textContent = "Only Citizens can build Houses";
+        buildSettlementBtn.disabled = true;
+        buildSettlementBtn.textContent = "Only Citizens can build Settlements";
+    }
+
+    exploreButton.addEventListener("click", () => {
+        u.order = "explore";
+        u.harvestResource = null;
+        u.currentBuild = null;
+        addActivityEntry(`${displayName} is now exploring.`);
+        renderOwnedUnitsList();
+        refreshActivitySummary();
+        showIndividualUnitDetails(u); // refresh panel
+        saveGameForCurrentUser();
+    });
+
+    if (!hasHarvestTargets) {
+        harvestButton.disabled = true;
+    }
+
+    harvestButton.addEventListener("click", () => {
+        const resKey = harvestSelect.value;
+        if (!resKey) {
+            alert("Select a resource to harvest.");
+            return;
+        }
+        u.order = "harvest";
+        u.harvestResource = resKey;
+        u.currentBuild = null;
+        addActivityEntry(`${displayName} begins harvesting ${titleCaseResource(resKey)}.`);
+        renderOwnedUnitsList();
+        refreshActivitySummary();
+        showIndividualUnitDetails(u);
+        saveGameForCurrentUser();
+    });
+
+    buildHouseBtn.addEventListener("click", () => {
+        if (u.type !== "citizen") return;
+
+        if (u.order === "build" && u.currentBuild) {
+            alert("This citizen is already building something.");
+            return;
+        }
+
+        if (game.wood < HOUSE_COST.wood || game.stone < HOUSE_COST.stone) {
+            alert("Not enough resources.\nRequires 50 Wood and 40 Stone.");
+            return;
+        }
+
+        // pay cost
+        game.wood -= HOUSE_COST.wood;
+        game.stone -= HOUSE_COST.stone;
+        if (game.wood < 0) game.wood = 0;
+        if (game.stone < 0) game.stone = 0;
+
+        u.order = "build";
+        u.harvestResource = null;
+        u.currentBuild = {
+            type: "house",
+            remaining: BUILD_TIMES.house,
+            total: BUILD_TIMES.house
+        };
+
+        addActivityEntry(`${displayName} has started building a House.`);
+        renderOwnedUnitsList();
+        refreshActivitySummary();
+        showIndividualUnitDetails(u);
+        saveGameForCurrentUser();
+    });
+
+    buildSettlementBtn.addEventListener("click", () => {
+        if (u.type !== "citizen") return;
+
+        if (u.order === "build" && u.currentBuild) {
+            alert("This citizen is already building something.");
+            return;
+        }
+
+        const resKey = settlementResourceSelect.value;
+        if (!resKey) {
+            alert("Select which resource this Settlement will focus on.");
+            return;
+        }
+
+        if (game.wood < SETTLEMENT_COST.wood) {
+            alert("Not enough resources.\nRequires 100 Wood.");
+            return;
+        }
+
+        // pay cost
+        game.wood -= SETTLEMENT_COST.wood;
+        if (game.wood < 0) game.wood = 0;
+
+        u.order = "build";
+        u.harvestResource = null;
+        u.currentBuild = {
+            type: "settlement",
+            resource: resKey,
+            remaining: BUILD_TIMES.settlement,
+            total: BUILD_TIMES.settlement
+        };
+
+        addActivityEntry(`${displayName} has started building a Settlement focused on ${titleCaseResource(resKey)}.`);
+        renderOwnedUnitsList();
+        refreshActivitySummary();
+        showIndividualUnitDetails(u);
+        saveGameForCurrentUser();
+    });
+}
+
+    function showBuildingDetails(id, nameRaw) {
+        const idLower = id.toLowerCase();
+        const data = buildingData[idLower];
+        const ownedCount = game.buildings && game.buildings[idLower]
+            ? game.buildings[idLower]
+            : 0;
+        const name = data ? data.name : nameRaw;
+
+        selectedEntity = { kind: "building", id: idLower, name };
+        updateExploreButtonState();
+        centerTitle.textContent = name;
+        centerSubtitle.textContent = "Building details and construction effects.";
+
+        if (data) {
+            detailPanel.innerHTML = `
+                <div class="detailSectionTitle">Overview</div>
+                <div class="detailRow"><strong>Name:</strong> ${data.name}</div>
+                <div class="detailRow"><strong>Description:</strong> ${data.desc}</div>
+
+                <div class="detailSectionTitle">Stats</div>
+                <div class="detailRow"><strong>HP:</strong> ${data.hp}</div>
+                <div class="detailRow"><strong>Population Bonus:</strong> ${data.pop}</div>
+                <div class="detailRow"><strong>Cost:</strong> ${data.costText}</div>
+                <div class="detailRow"><strong>Owned:</strong> ${ownedCount}</div>
+            `;
+        } else {
+            detailPanel.innerHTML = `
+                <div class="detailSectionTitle">Overview</div>
+                <div class="detailRow"><strong>Name:</strong> ${name}</div>
+                <div class="detailRow"><strong>Type:</strong> Building</div>
+                <div class="detailRow"><strong>Description:</strong> Placeholder description for ${name}.</div>
+                <div class="detailRow"><strong>Owned:</strong> ${ownedCount}</div>
+            `;
+        }
+    }
+
+    function findTileAssignedToGroup(groupId) {
+        if (!worldMap || !worldMap.tiles) return null;
+        const tiles = Object.values(worldMap.tiles);
+        for (const t of tiles) {
+            if (t.assignedGroupId === groupId) return t;
+        }
+        return null;
+    }
+
+    function getWorkableTiles() {
+        if (!worldMap || !worldMap.tiles) return [];
+        const workableTypes = Object.keys(productionRates);
+        return Object.values(worldMap.tiles)
+            .filter(t => t.explored && workableTypes.includes(t.type))
+            .sort((a, b) => (a.q - b.q) || (a.r - b.r));
+    }
+
+    function describeTileShort(t) {
+        const typeName = {
+            grass: "Grassland",
+            forest: "Forest",
+            berry: "Berry Bushes",
+            stone: "Stone Outcrop",
+            game: "Hunting Grounds",
+            river: "River Bend",
+            iron: "Iron Deposit",
+            ruins: "Ancient Ruins",
+            enemy: "Enemy Camp"
+        }[t.type] || t.type;
+        return `(${t.q}, ${t.r}) – ${typeName}`;
+    }
+
+    function showGroupDetails(group) {
+        selectedEntity = { kind: "group", id: group.id, name: group.name };
+        updateExploreButtonState();
+        centerTitle.textContent = group.name;
+        centerSubtitle.textContent = "Group composition, orders, and territory assignment.";
+
+        const assignedTile = findTileAssignedToGroup(group.id);
+        const assignmentText = assignedTile
+            ? `Assigned to ${describeTileShort(assignedTile)}`
+            : "Not assigned – idle.";
+
+        detailPanel.innerHTML = `
+            <div class="detailSectionTitle">Overview</div>
+            <div class="detailRow"><span class="statLabel">Name:</span> ${group.name}</div>
+            <div class="detailRow"><span class="statLabel">Order:</span> ${group.orderLabel}</div>
+            <div class="detailRow"><span class="statLabel">Assignment:</span> ${assignmentText}</div>
+
+            <div class="detailSectionTitle">Composition</div>
+            <div class="detailRow">Citizens: ${group.members.citizen}</div>
+            <div class="detailRow">Scouts: ${group.members.scout}</div>
+            <div class="detailRow">Hunters: ${group.members.hunter}</div>
+
+            <div id="groupAssignmentControls">
+                <div><strong>Assign territory for idle production</strong></div>
+                <div>Select any discovered resource tile. One group per tile.</div>
+                <select id="groupTileSelect"></select>
+                <div>
+                    <button type="button" class="assignBtn" id="assignTileBtn">Assign</button>
+                    <button type="button" class="unassignBtn" id="unassignTileBtn">Unassign</button>
+                </div>
+            </div>
+        `;
+
+        populateGroupAssignmentControls(group);
+    }
+
+    function populateGroupAssignmentControls(group) {
+        const select = document.getElementById("groupTileSelect");
+        const assignBtn = document.getElementById("assignTileBtn");
+        const unassignBtn = document.getElementById("unassignTileBtn");
+        if (!select) return;
+
+        const tiles = getWorkableTiles();
+        const assignedTile = findTileAssignedToGroup(group.id);
+
+        select.innerHTML = "";
+        if (!tiles.length) {
+            const opt = document.createElement("option");
+            opt.textContent = "No workable territory discovered yet.";
+            opt.value = "";
+            select.appendChild(opt);
+            select.disabled = true;
+            assignBtn.disabled = true;
+        } else {
+            select.disabled = false;
+            assignBtn.disabled = false;
+
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.textContent = "Select territory…";
+            select.appendChild(placeholder);
+
+            tiles.forEach(t => {
+                const opt = document.createElement("option");
+                const key = tileKey(t.q, t.r);
+                opt.value = key;
+
+                const occupiedBy = t.assignedGroupId && t.assignedGroupId !== group.id
+                    ? groups.find(g => g.id === t.assignedGroupId)
+                    : null;
+
+                let label = describeTileShort(t);
+                if (occupiedBy) {
+                    label += ` (occupied by ${occupiedBy.name})`;
+                    opt.disabled = true;
+                } else if (assignedTile && assignedTile.q === t.q && assignedTile.r === t.r) {
+                    label += " (current assignment)";
+                    opt.selected = true;
+                }
+
+                opt.textContent = label;
+                select.appendChild(opt);
+            });
+        }
+
+        unassignBtn.disabled = !assignedTile;
+
+        assignBtn.onclick = () => {
+            const key = select.value;
+            if (!key) {
+                alert("Choose a territory first.");
+                return;
+            }
+            const tile = getTileByKey(key);
+            if (!tile || !tile.explored) {
+                alert("Invalid territory.");
+                return;
+            }
+            if (tile.assignedGroupId && tile.assignedGroupId !== group.id) {
+                alert("This territory is already worked by another group.");
+                return;
+            }
+
+            const current = findTileAssignedToGroup(group.id);
+            if (current) {
+                current.assignedGroupId = null;
+            }
+
+            tile.assignedGroupId = group.id;
+            if (typeof tile._rem_food !== "number") {
+                tile._rem_food = 0;
+                tile._rem_wood = 0;
+                tile._rem_stone = 0;
+                tile._rem_iron = 0;
+            }
+
+            addActivityEntry(`Group "${group.name}" assigned to work ${describeTileShort(tile)}.`);
+            showGroupDetails(group);
+            updateUI();
+        };
+
+        unassignBtn.onclick = () => {
+            const current = findTileAssignedToGroup(group.id);
+            if (!current) return;
+            current.assignedGroupId = null;
+            addActivityEntry(`Group "${group.name}" is no longer assigned to any territory.`);
+            showGroupDetails(group);
+            updateUI();
+        };
+    }
+
+    function renderQueuedPanel() {
+        if (!queuedPanel) return;
+
+        if (!groups.length) {
+            queuedPanel.textContent = "No groups created yet.";
+            return;
+        }
+
+        const lines = [];
+        groups.forEach(g => {
+            const assignment = getProductionEstimateForGroup(g);
+            if (!assignment) {
+                lines.push(`<div><strong>${g.name}</strong> – idle (no territory assigned)</div>`);
+            } else {
+                const parts = [];
+                const perMin = assignment.perMin;
+                if (perMin.food)  parts.push(`${Math.round(perMin.food)} food / min`);
+                if (perMin.wood)  parts.push(`${Math.round(perMin.wood)} wood / min`);
+                if (perMin.stone) parts.push(`${Math.round(perMin.stone)} stone / min`);
+                if (perMin.iron)  parts.push(`${Math.round(perMin.iron)} iron / min`);
+
+                const tileLabel = describeTileShort(assignment.tile);
+                const rateText = parts.length ? parts.join(", ") : "no meaningful output";
+                lines.push(`<div><strong>${g.name}</strong> on ${tileLabel}<br><span style="font-size:11px;color:#555;">~ ${rateText}</span></div>`);
+            }
+        });
+
+        queuedPanel.innerHTML = lines.join("<hr style='border:none;border-top:1px solid #eee;margin:6px 0;'>");
+    }
+
+    function getProductionEstimateForGroup(group) {
+        const tile = findTileAssignedToGroup(group.id);
+        if (!tile) return null;
+        const config = productionRates[tile.type];
+        if (!config) return null;
+
+        const workers = group.members.citizen + group.members.scout + group.members.hunter;
+        if (workers <= 0) return null;
+
+        const perMin = {};
+        for (const resKey in config) {
+            const perWorkerPerSec = config[resKey];
+            perMin[resKey] = perWorkerPerSec * workers * 60;
+        }
+        return { tile, perMin };
+    }
+
+    // ---------- production / harvesting / exploration / building ----------
+function addRemainderToTile(tile, resKey, amount) {
+    if (!amount || amount <= 0) return;
+
+    if (resKey !== "food" && resKey !== "wood" && resKey !== "stone" && resKey !== "iron") return;
+    if (!discoveredTotals[resKey] || discoveredTotals[resKey] <= 0) return;
+
+    let remField;
+    if (resKey === "food")  remField = "_rem_food";
+    else if (resKey === "wood")  remField = "_rem_wood";
+    else if (resKey === "stone") remField = "_rem_stone";
+    else if (resKey === "iron")  remField = "_rem_iron";
+
+    if (typeof tile[remField] !== "number") tile[remField] = 0;
+
+    let r = tile[remField] + amount;
+    let whole = Math.floor(r);
+
+    if (whole > discoveredTotals[resKey]) {
+        whole = discoveredTotals[resKey];
+    }
+
+    tile[remField] = r - whole;
+
+    if (whole > 0) {
+        game[resKey] = (game[resKey] || 0) + whole;
+        discoveredTotals[resKey] -= whole;
+        if (discoveredTotals[resKey] < 0) discoveredTotals[resKey] = 0;
+    }
+}
+
+function applyProductionForTile(tile, dtSeconds) {
+    if (!tile.assignedGroupId) return;
+    const group = groups.find(g => g.id === tile.assignedGroupId);
+    if (!group) {
+        tile.assignedGroupId = null;
+        return;
+    }
+    const config = productionRates[tile.type];
+    if (!config) return;
+
+    const workers = group.members.citizen + group.members.scout + group.members.hunter;
+    if (workers <= 0) {
+        tile.assignedGroupId = null;
+        return;
+    }
+
+    for (const resKey in config) {
+        const perWorkerPerSec = config[resKey];
+        const amount = perWorkerPerSec * workers * dtSeconds;
+        addRemainderToTile(tile, resKey, amount);
+    }
+}
+
+function harvestResourceForUnit(u, dtSeconds, boostedSlots, usedBoost) {
+    const resKey = u.harvestResource;
+    if (!resKey) return;
+    if (!discoveredTotals[resKey] || discoveredTotals[resKey] <= 0) {
+        // nothing left to harvest; unit becomes idle
+        if (u.order === "harvest") {
+            u.order = "idle";
+            u.harvestResource = null;
+            u.harvestRemainder = 0;
+            addActivityEntry(`${capitalize(u.type)} #${u.id} has exhausted that resource and is now idle.`);
+        }
+        return;
+    }
+
+    let rate = UNIT_HARVEST_RATES[resKey] || 0;
+    if (!rate) return;
+
+    // Settlement boost: first N Citizens harvesting this resource get 200% rate
+    if (u.type === "citizen" && boostedSlots && usedBoost) {
+        const totalSlots = boostedSlots[resKey] || 0;
+        const used = usedBoost[resKey] || 0;
+        if (used < totalSlots) {
+            rate *= SETTLEMENT_BOOST_FACTOR;
+            usedBoost[resKey] = used + 1;
+        }
+    }
+
+    u.harvestRemainder = (u.harvestRemainder || 0) + rate * dtSeconds;
+    let whole = Math.floor(u.harvestRemainder);
+    if (whole > discoveredTotals[resKey]) {
+        whole = discoveredTotals[resKey];
+    }
+
+    u.harvestRemainder -= whole;
+
+    if (whole > 0) {
+        game[resKey] = (game[resKey] || 0) + whole;
+        discoveredTotals[resKey] -= whole;
+        if (discoveredTotals[resKey] < 0) discoveredTotals[resKey] = 0;
+    }
+}
+
+function getSettlementBoostSlots() {
+    const a = game.settlementAssignments || { food: 0, wood: 0, stone: 0, iron: 0 };
+    return {
+        food: (a.food || 0) * SETTLEMENT_SLOTS_PER,
+        wood: (a.wood || 0) * SETTLEMENT_SLOTS_PER,
+        stone: (a.stone || 0) * SETTLEMENT_SLOTS_PER,
+        iron: (a.iron || 0) * SETTLEMENT_SLOTS_PER
+    };
+}
+
+function unitHarvestTick(dtSeconds) {
+    const boostedSlots = getSettlementBoostSlots();
+    const usedBoost = { food: 0, wood: 0, stone: 0, iron: 0 };
+
+    unitInstances.forEach(u => {
+        if (u.order !== "harvest") return;
+        harvestResourceForUnit(u, dtSeconds, boostedSlots, usedBoost);
+    });
+}
+
+function completeBuild(u, build) {
+    const type = build.type;
+    if (!game.buildings) game.buildings = { house: 0, settlement: 0 };
+
+    if (type === "house") {
+        game.buildings.house = (game.buildings.house || 0) + 1;
+        game.populationLimit += HOUSE_POP;
+        addActivityEntry(`${capitalize(u.type)} #${u.id} finished building a House. Population limit increased by ${HOUSE_POP}.`);
+    } else if (type === "settlement") {
+        const resKey = build.resource;
+        if (!game.settlementAssignments) {
+            game.settlementAssignments = { food: 0, wood: 0, stone: 0, iron: 0 };
+        }
+        if (!game.buildings.settlement) game.buildings.settlement = 0;
+
+        game.buildings.settlement += 1;
+        if (resKey && game.settlementAssignments.hasOwnProperty(resKey)) {
+            game.settlementAssignments[resKey] += 1;
+        }
+
+        const pretty = resKey ? titleCaseResource(resKey) : "a resource";
+        addActivityEntry(
+            `${capitalize(u.type)} #${u.id} finished building a Settlement focused on ${pretty}. ` +
+            `It will boost up to ${SETTLEMENT_SLOTS_PER} Citizens harvesting ${pretty} at 200% rate.`
+        );
+    } else {
+        addActivityEntry(`${capitalize(u.type)} #${u.id} finished building a ${buildingName(type)}.`);
+    }
+}
+
+function unitBuildTick(dtSeconds) {
+    unitInstances.forEach(u => {
+        if (u.order !== "build" || !u.currentBuild) return;
+        u.currentBuild.remaining -= dtSeconds;
+        if (u.currentBuild.remaining <= 0) {
+            const build = u.currentBuild;
+            u.currentBuild = null;
+            u.order = "idle";
+            completeBuild(u, build);
+        }
+    });
+}
+
+// automatic exploration
+function performExplorationFor(actorLabel) {
+    const tile = discoverNewTile();
+    if (!tile) return;
+    explorationCount++;
+    addActivityEntry(`${actorLabel} is exploring.`);
+}
+
+function explorationTick(dtSeconds = 1) {
+    // Individual units on Explore
+    unitInstances.forEach(u => {
+        if (u.order !== "explore") return;
+        u.exploreProgress = (u.exploreProgress || 0) + dtSeconds;
+        if (u.exploreProgress >= UNIT_EXPLORE_TIME) {
+            u.exploreProgress -= UNIT_EXPLORE_TIME;
+            performExplorationFor(`${capitalize(u.type)} #${u.id}`);
+        }
+    });
+
+    // Groups on Explore
+    groups.forEach(g => {
+        if (g.order !== "explore") return;
+        g.exploreProgress = (g.exploreProgress || 0) + dtSeconds;
+        if (g.exploreProgress >= GROUP_EXPLORE_TIME) {
+            g.exploreProgress -= GROUP_EXPLORE_TIME;
+            performExplorationFor(`Group "${g.name}"`);
+        }
+    });
+}
+
+function productionTick(dtSeconds = 1) {
+    if (!worldMap || !worldMap.tiles) return;
+    const tiles = Object.values(worldMap.tiles);
+    tiles.forEach(t => {
+        if (t.assignedGroupId) applyProductionForTile(t, dtSeconds);
+    });
+
+    unitHarvestTick(dtSeconds);
+    unitBuildTick(dtSeconds);
+    explorationTick(dtSeconds);
+    updateUI();
+}
+
+
+    // ---------- update UI ----------
+    function updateUI() {
+        document.getElementById("food").textContent  = Math.floor(game.food);
+        document.getElementById("wood").textContent  = Math.floor(game.wood);
+        document.getElementById("gold").textContent  = Math.floor(game.gold);
+        document.getElementById("stone").textContent = Math.floor(game.stone);
+        document.getElementById("iron").textContent  = Math.floor(game.iron);
+        document.getElementById("pop").textContent = `${game.population}/${game.populationLimit}`;
+
+        updateUnitCounts();
+        renderOwnedUnitsList();
+
+        updateAvailableUnitsDisplay();
+        updateGroupInputsMax();
+        renderGroupsList();
+        renderDiscoveredList();
+        renderQueuedPanel();
+        refreshActivitySummary();
+        updateExploreButtonState();
+        saveGameForCurrentUser();
+    }
+
+    // ---------- events ----------
+    loginBtn.addEventListener("click", () => {
+        const u = usernameInput.value.trim();
+        const p = passwordInput.value;
+        if (!u || !p) { alert("Enter username and password"); return; }
+        const users = loadUsers();
+        if (!users[u]) { alert("Account not found. Sign up first."); return; }
+        if (users[u].password !== p) { alert("Incorrect password."); return; }
+        setCurrentUser(u);
+        if (!loadGameForUser(u)) startNewGameState();
+        updateUI();
+        addActivityEntry(`User "${u}" logged in.`);
+        usernameInput.value = "";
+        passwordInput.value = "";
+    });
+
+    signupBtn.addEventListener("click", () => {
+        const u = usernameInput.value.trim();
+        const p = passwordInput.value;
+        if (!u || !p) { alert("Enter username and password to sign up"); return; }
+        const users = loadUsers();
+        if (users[u]) { alert("That username is already taken."); return; }
+        users[u] = { password: p, createdAt: Date.now() };
+        saveUsers(users);
+        setCurrentUser(u);
+        startNewGameState();
+        updateUI();
+        addActivityEntry(`User "${u}" created a new account and started a new empire.`);
+        usernameInput.value = "";
+        passwordInput.value = "";
+    });
+
+    logoutBtn.addEventListener("click", () => {
+        if (currentUser) addActivityEntry(`User "${currentUser}" logged out.`);
+        setCurrentUser(null);
+        startNewGameState();
+        updateUI();
+    });
+
+    leftTabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+            leftTabs.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            const t = btn.dataset.tab;
+
+            document.getElementById("unitsPane").style.display = "none";
+            buildingsList.style.display = "none";
+            groupsPane.style.display = "none";
+
+            if (t === "units") document.getElementById("unitsPane").style.display = "";
+            else if (t === "buildings") buildingsList.style.display = "";
+            else if (t === "groups") { groupsPane.style.display = ""; updateUI(); }
+        });
+    });
+
+    rightTabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+            rightTabs.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            const t = btn.dataset.tab;
+            rightBodies.forEach(el => {
+                el.style.display = el.getAttribute("data-right-tab") === t ? "" : "none";
+            });
+        });
+    });
+
+    unitsList.addEventListener("click", e => {
+        const li = e.target.closest("li");
+        if (!li) return;
+        const id = li.dataset.id;
+        const name = li.textContent.trim();
+        showUnitTemplateDetails(id, name);
+    });
+
+    ownedUnitsListEl.addEventListener("click", e => {
+        const li = e.target.closest("li");
+        if (!li || !li.dataset.unitId) return;
+        const id = parseInt(li.dataset.unitId, 10);
+        const u = unitInstances.find(x => x.id === id);
+        if (u) showIndividualUnitDetails(u);
+    });
+
+    buildingsList.addEventListener("click", e => {
+        const li = e.target.closest("li");
+        if (!li) return;
+        const id = li.dataset.id;
+        const name = li.textContent.trim();
+        showBuildingDetails(id, name);
+    });
+
+    groupsListEl.addEventListener("click", e => {
+        const li = e.target.closest("li");
+        if (!li || !li.dataset.groupId) return;
+        const id = parseInt(li.dataset.groupId, 10);
+        const g = groups.find(x => x.id === id);
+        if (g) showGroupDetails(g);
+    });
+
+    // Explore button is obsolete; no click handler.
+
+    createGroupBtn.addEventListener("click", () => {
+        createGroupForm.style.display = "";
+        groupNameInput.value = "";
+        groupOrderInput.value = "explore";
+        groupCitizenInput.value = "0";
+        groupScoutInput.value = "0";
+        groupHunterInput.value = "0";
+        updateGroupInputsMax();
+    });
+
+    cancelGroupBtn.addEventListener("click", () => {
+        createGroupForm.style.display = "none";
+    });
+
+    saveGroupBtn.addEventListener("click", () => {
+        const name = groupNameInput.value.trim();
+        const order = groupOrderInput.value;
+        const orderLabel = capitalize(order);
+        const c = parseInt(groupCitizenInput.value || "0", 10);
+        const s = parseInt(groupScoutInput.value || "0", 10);
+        const h = parseInt(groupHunterInput.value || "0", 10);
+        const a = getAvailableUnits();
+        if (!name) { alert("Group must have a name."); return; }
+        if (c + s + h <= 0) { alert("Assign at least one unit."); return; }
+        if (c > a.citizen || s > a.scout || h > a.hunter) {
+            alert("Not enough available units."); return; }
+        const g = {
+            id: nextGroupId++,
+            name,
+            order,
+            orderLabel,
+            members: { citizen: c, scout: s, hunter: h },
+            exploreProgress: 0
+        };
+        groups.push(g);
+        createGroupForm.style.display = "none";
+        renderGroupsList();
+        updateAvailableUnitsDisplay();
+        addActivityEntry(`Group "${g.name}" created and assigned to ${orderLabel}.`);
+        showGroupDetails(g);
+        updateUI();
+    });
+
+    // ---------- init ----------
+    (function init() {
+        initWorldMap();
+        const prev = loadCurrentUserFromStorage();
+        if (prev) {
+            const users = loadUsers();
+            if (users[prev]) {
+                currentUser = prev;
+                updateAuthUI();
+                if (!loadGameForUser(prev)) startNewGameState();
+                addActivityEntry(`Welcome back, ${prev}.`);
+                updateUI();
+                setInterval(() => productionTick(1), 1000);
+                return;
+            }
+        }
+        setCurrentUser(null);
+        startNewGameState();
+        updateUI();
+        setInterval(() => productionTick(1), 1000);
+    })();
+</script>
 </body>
 </html>
-
